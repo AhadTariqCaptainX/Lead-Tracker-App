@@ -1,14 +1,17 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
-
+import { getDatabase,
+         ref,
+         push,
+         onValue,
+         remove } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js"
 
 const firebaseConfig = {
-    databaseURL: process.env.database_URL
+    databaseURL: "https://lead-tracker-app-6424c-default-rtdb.asia-southeast1.firebasedatabase.app/"
 }
 
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig)
 const database = getDatabase(app)
-
+const referenceInDB = ref(database, "leads")
 
 const inputEl = document.getElementById("input-el")
 const inputBtn = document.getElementById("input-btn")
@@ -29,12 +32,21 @@ function render(leads) {
     ulEl.innerHTML = listItems
 }
 
+onValue(referenceInDB, function(snapshot) {
+    const snapshotDoesExist = snapshot.exists()
+    if (snapshotDoesExist) {
+        const snapshotValues = snapshot.val()
+        const leads = Object.values(snapshotValues)
+        render(leads)
+    }
+})
+
 deleteBtn.addEventListener("dblclick", function() {
-    
+    remove(referenceInDB)
+    ulEl.innerHTML = ""
 })
 
 inputBtn.addEventListener("click", function() {
-    console.log(inputEl.value)
-    inputEl.value = ""
-    
+    push(referenceInDB, inputEl.value)
+    inputEl.value = "" 
 })
